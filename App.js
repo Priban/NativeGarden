@@ -10,7 +10,8 @@ const height = 800;
 export default function App() {
 
   const [plants, setPlants] = useState([]);
-  const [touch, setTouch] = useState({ start: vec(0, 0), end: vec(0, 0) });
+  const [touchStart, setTouchStart] = useState(vec(0, 0));
+  const [touchEnd, setTouchEnd] = useState(vec(0, 0));
   const [touching, setTouching] = useState(false);
   const lineOpacity = useSpring(touching ? 1 : 0);
 
@@ -26,38 +27,35 @@ export default function App() {
 
   const onCanvasTouch = useTouchHandler({
     onStart: ({ x, y }) => {
-      setTouch(t => ({ start: vec(x, y), end: vec(x, y) }));
+      setTouchStart(vec(x, y));
       setTouching(true);
     },
     onActive: ({ x, y }) => {
-      setTouch(t => ({ ...t, end: vec(x, y) }));
+      setTouchEnd(vec(x, y));
     },
-    onEnd: (event) => {
-      console.log("touch end");
-      console.log(event);
-
-      // distinguish between a tap and a swipe
-      if (Math.abs(touch.start.x - x) < 10 && Math.abs(touch.start.y - y) < 10) {
-        console.log("tapped");
-        addPlant(x, y);
-      } else {
-
-      }
-
-      setTouch(t => {
-        return { ...t, end: vec(x, y) }
-      });
+    onEnd: ({ x, y }) => {
+      console.log(x, y);
       setTouching(false);
     },
   });
+
+  useEffect(() => {
+    if (touching) {
+      return;
+    }
+    console.log("touchend -------");
+    console.log(touchStart.x, touchStart.y);
+    console.log(touchEnd.x, touchEnd.y);
+  }, [touching]);
+  
 
   return (
     <>
       <Canvas style={{ width, height, backgroundColor: "brown" }} onTouch={onCanvasTouch}>
         {plants}
         <Line
-          p1={touch.start}
-          p2={touch.end}
+          p1={touchStart}
+          p2={touchEnd}
           color={touching ? "lightblue" : "red"}
           style="stroke"
           strokeWidth={2}
